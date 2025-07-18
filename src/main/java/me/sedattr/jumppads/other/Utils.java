@@ -88,17 +88,31 @@ public class Utils {
                     section.getDouble("speed"));
     }
 
-    public static void getList(CommandSender p) {
-        int count = 1;
-        if (Variables.jumpPads.isEmpty()) {
-            Utils.sendMessage(p, "no-jump-pad", false);
-            return;
-        }
+    public static void showParticle(Player player, String type, Location location) {
+    ConfigurationSection section = ProJumpPads.getInstance().settings.getConfigurationSection("particles." + type);
+    if (section == null || !section.getBoolean("enabled")) {
+        return;
+    }
+    String name = section.getString("name");
+    if (name == null || name.equals("")) {
+        return;
+    }
 
-        for (PadHandler pad : Variables.jumpPads) {
-            p.sendMessage(Utils.colorize(Variables.messages.getString("list", "&a%count%&8- &a%name%")
-                    .replace("%count%", String.valueOf(count)).replace("%name%", pad.getName())));
-            count++;
-        }
+    ParticleType effect;
+    try {
+        effect = ParticleType.of(name);
+    } catch (Exception e) {
+        Bukkit.getLogger().warning("[ProJumpPads] Invalid particle type: " + name);
+        return;
+    }
+
+    if (player == null) {
+        effect.spawn(location.getWorld(), location, section.getInt("amount"),
+                section.getDouble("x-offset"), section.getDouble("y-offset"),
+                section.getDouble("z-offset"), section.getDouble("speed"));
+    } else {
+        effect.spawn(player, location, section.getInt("amount"),
+                section.getDouble("x-offset"), section.getDouble("y-offset"),
+                section.getDouble("z-offset"), section.getDouble("speed"));
     }
 }
